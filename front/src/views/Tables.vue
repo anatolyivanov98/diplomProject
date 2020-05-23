@@ -95,6 +95,7 @@
         this.isChartLine = false
         this.isChartPie = false
         this.isChartBar = false
+        // this.isChartStackedBar = false
       },
       async changeTable() {
         this.action = !this.action
@@ -113,6 +114,7 @@
         this.isChartPie = false
         this.isChartBar = false
         this.action = false
+        this.isChartStackedBar = false
         this.isChooseChart = !this.isChooseChart
       },
       chooseChartHandler() {
