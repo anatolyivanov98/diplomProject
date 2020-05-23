@@ -180,24 +180,34 @@ def GetNumListOfColumn(lst):
 
 def GetDataForCharts(requestData, data):
     responseDct = {}
+    dataDict={}
     for key, value in requestData.items():
         if value == True:
             responseDct['GraphType'] = key.split("s")[1]
-    i = 1
-    labelDct = {}
-    dataDct = {}
-    headDct = {}
-    for numcol in requestData['selectColumn']:
-        values = sorted(data.iloc[:, (int)(numcol) - 1].value_counts().index.tolist())# labels
-        amountOfValues = data.groupby([(int)(numcol) - 1]).size().tolist()# data
-        if countNaN(data.iloc[:, (int)(numcol)-1]):
+    if responseDct['GraphType'] == 'StackedBar':
+        colX = (int)(requestData['columnX'][0])
+        colY = (int)(requestData['columnY'][0])
+        pivotTable = data.groupby([colX-1, colY-1]).size().unstack()
+        cols = pivotTable.columns.tolist()#male/fem/survived/died
+        responseDct['labels'] = pivotTable.index.tolist()# 1, 2, 3 класс
+        responseDct['header'] = cols
+        for i in range(len(cols)):
+            dataDict[i] = pivotTable.iloc[:, i].values.tolist()
+        responseDct['data'] = dataDict
+    else:
+        labelDct = {}
+        dataDct = {}
+        headDct = {}
+        numcol = (int)(requestData['selectColumn'][0])
+        values = sorted(data.iloc[:, numcol - 1].value_counts().index.tolist())# labels
+        amountOfValues = data.groupby([numcol - 1]).size().tolist()# data
+        if countNaN(data.iloc[:, numcol-1]):
             values.append('Nan')
-            amountOfValues.append(countNaN(data.iloc[:, (int)(numcol)-1]))
-        labelDct[i] = values
-        dataDct[i] = amountOfValues
-        headDct[i] = 'Column #'+numcol
-        i += 1
-    responseDct['labels'] = labelDct
-    responseDct['data'] = dataDct
-    responseDct['header'] = headDct
+            amountOfValues.append(countNaN(data.iloc[:, numcol-1]))
+        labelDct[1] = values
+        dataDct[1] = amountOfValues
+        headDct[1] = 'Column #'+ (str)(numcol)
+        responseDct['labels'] = labelDct
+        responseDct['data'] = dataDct
+        responseDct['header'] = headDct
     return responseDct

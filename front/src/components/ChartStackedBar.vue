@@ -15,6 +15,26 @@
     mounted() {
       this.chartData = this.$store.state.table.chartData
 
+      let counter = 0
+      for( let n in this.chartData.header) {
+        counter++
+      }
+       const Colors = [
+        '#ffeda0',
+        '#fed976',
+        '#feb24c',
+        '#fd8d3c',
+        '#fc4e2a',
+        '#e31a1c',
+        '#bd0026',
+        '#800026'
+      ]
+
+      let dd = []
+      for( let i = 0; i < counter; i++){
+            dd[i] =  {label: this.chartData.header[i], data: this.chartData.data[i], backgroundColor:Colors[i] }
+      }
+
       const chartOptions = {
           scales: {
             xAxes: [{
@@ -27,16 +47,8 @@
         }
 
       const allData = {
-          labels: ['1Class', '2Class', '3Class'],
-          datasets: [{
-         label: 'Died',
-         data: [80, 97, 372],
-         backgroundColor: '#22aa99'
-      }, {
-         label: 'Survived',
-         data: [136, 87, 119],
-         backgroundColor: '#994499'
-      }]
+          labels: this.chartData.labels,
+          datasets: dd
         }
 
       this.renderChart(allData, chartOptions)
@@ -48,3 +60,8 @@
 <style scoped lang="scss">
 
 </style>
+
+
+
+
+
