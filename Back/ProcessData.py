@@ -155,20 +155,30 @@ def GetDictColumns(data, fl):
         dct[i+1] =(str)(i+1)+' ('+(str)(countNaN(data.iloc[:, i]))+' NaN)' if fl else (str)(i+1)
     return dct
 
+
+#cols = pivotTable.columns.tolist()#male/fem/survived/died
+       # responseDct['labels'] = pivotTable.index.tolist()# 1, 2, 3 класс
+def ReplaceNaNTo(data, sym):
+    newdata = data.copy()
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            if (str)(data.iloc[i, j]) == 'nan':
+                newdata.iloc[i, j] = sym
+    return newdata
+
+
 def GetDictTable(data):
     cols = data.shape[1]
     rows = data.shape[0]
     a = [c for c in range(0, cols+1)]
     d = {}
     d[0] = a
+    data = ReplaceNaNTo(data, "NaN")
     for i in range(1, rows+1):
         lst = []
         lst.append(i)
         for j in range(cols):
-            if (str)(data.iloc[i-1, j]) == 'nan':
-                lst.append("NaN")
-            else:
-                lst.append(data.iloc[i-1, j])
+            lst.append(data.iloc[i-1, j])
         d[i] = lst
     return d
 
@@ -181,15 +191,16 @@ def GetNumListOfColumn(lst):
 def GetDataForCharts(requestData, data):
     responseDct = {}
     dataDict={}
+    data = TurnToString(data)
     for key, value in requestData.items():
         if value == True:
             responseDct['GraphType'] = key.split("s")[1]
     if responseDct['GraphType'] == 'StackedBar':
         colX = (int)(requestData['columnX'][0])
         colY = (int)(requestData['columnY'][0])
-        pivotTable = data.groupby([colX-1, colY-1]).size().unstack()
-        cols = pivotTable.columns.tolist()#male/fem/survived/died
-        responseDct['labels'] = pivotTable.index.tolist()# 1, 2, 3 класс
+        pivotTable = ReplaceNaNTo(data.groupby([colX-1, colY-1]).size().unstack(), 0)
+        cols = pivotTable.columns.tolist()
+        responseDct['labels'] = pivotTable.index.tolist()
         responseDct['header'] = cols
         for i in range(len(cols)):
             dataDict[i] = pivotTable.iloc[:, i].values.tolist()
@@ -201,9 +212,6 @@ def GetDataForCharts(requestData, data):
         numcol = (int)(requestData['selectColumn'][0])
         values = sorted(data.iloc[:, numcol - 1].value_counts().index.tolist())# labels
         amountOfValues = data.groupby([numcol - 1]).size().tolist()# data
-        if countNaN(data.iloc[:, numcol-1]):
-            values.append('Nan')
-            amountOfValues.append(countNaN(data.iloc[:, numcol-1]))
         labelDct[1] = values
         dataDct[1] = amountOfValues
         headDct[1] = 'Column #'+ (str)(numcol)
